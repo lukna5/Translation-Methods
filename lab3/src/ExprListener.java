@@ -1,4 +1,7 @@
 // Generated from java-escape by ANTLR 4.11.1
+
+import java.util.*;
+
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -47,6 +50,16 @@ public interface ExprListener extends ParseTreeListener {
 	 */
 	void exitExpr(ExprParser.ExprContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ExprParser#expr1}.
+	 * @param ctx the parse tree
+	 */
+	void enterExpr1(ExprParser.Expr1Context ctx);
+	/**
+	 * Exit a parse tree produced by {@link ExprParser#expr1}.
+	 * @param ctx the parse tree
+	 */
+	void exitExpr1(ExprParser.Expr1Context ctx);
+	/**
 	 * Enter a parse tree produced by {@link ExprParser#predicate}.
 	 * @param ctx the parse tree
 	 */
@@ -87,15 +100,15 @@ public interface ExprListener extends ParseTreeListener {
 	 */
 	void exitElseBody(ExprParser.ElseBodyContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ExprParser#assign}.
+	 * Enter a parse tree produced by {@link ExprParser#elIf}.
 	 * @param ctx the parse tree
 	 */
-	void enterAssign(ExprParser.AssignContext ctx);
+	void enterElIf(ExprParser.ElIfContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ExprParser#assign}.
+	 * Exit a parse tree produced by {@link ExprParser#elIf}.
 	 * @param ctx the parse tree
 	 */
-	void exitAssign(ExprParser.AssignContext ctx);
+	void exitElIf(ExprParser.ElIfContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ExprParser#opBool}.
 	 * @param ctx the parse tree
