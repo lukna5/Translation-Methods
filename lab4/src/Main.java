@@ -81,6 +81,7 @@ public class Main {
         while (next != null){
             System.out.println(next);
             next = analyzer.next();
+
         }
     }
 
@@ -91,7 +92,11 @@ public class Main {
             "(5 + 5) * 4", 40,
             "150 - 20 * 40 / 8 + 15 * (15 - 13)", 80,
             "(150 + (42 - 8 * (4)) - 5 * (4 + 3))", 125,
-            "-(-5 + -40) * -(-2)", 90
+            "-(-5 + -40) * -(-2)", 90,
+            "log (8, 2)", 3,
+            "8 // 2 // 2", 8,
+            "16 // 2 // 2 // 2", 8
+
     );
     private static void testCalculator() throws ParseException{
         for (String expr: calcRight.keySet()){

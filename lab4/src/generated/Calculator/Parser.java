@@ -12,11 +12,15 @@ LexicalAnalyzer lexicalAnalyzer;
 public Parser(LexicalAnalyzer lexicalAnalyzer){
         this.lexicalAnalyzer = lexicalAnalyzer;
 }
+
+private int log (int x, int y) {
+    return (int) (Math.log(x) / Math.log(y));
+}
 public eClass e () throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
     eClass res = new eClass("e");
     switch(curTypeToken){
-        case DIGIT, MINUS, OPEN -> {
+        case LOG, DIGIT, MINUS, OPEN -> {
             tClass t0 = t();
             res.addChild(t0);
             ePrimeClass ePrime1 = ePrime(t0.val);
@@ -84,7 +88,7 @@ public tClass t () throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
     tClass res = new tClass("t");
     switch(curTypeToken){
-        case DIGIT, MINUS, OPEN -> {
+        case LOG, DIGIT, MINUS, OPEN -> {
             mClass m0 = m();
             res.addChild(m0);
             tPrimeClass tPrime1 = tPrime(m0.val);
@@ -105,6 +109,15 @@ public tPrimeClass tPrime (int acc) throws ParseException{
         case END, CLOSE, PLUS, MINUS -> {
             res.addChild(new Tree("EPS"));
              res.val = acc; 
+        }
+        case DIVV -> {
+            divRClass divR0 = divR();
+            res.addChild(divR0);
+         res.val = acc / divR0.val; 
+            tPrimeClass tPrime1 = tPrime(res.val);
+            res.addChild(tPrime1);
+         res.val = tPrime1.val; 
+
         }
         case MUL -> {
             if (lexicalAnalyzer.cur().typeToken != TypeToken.MUL) {
@@ -148,6 +161,53 @@ public tPrimeClass tPrime (int acc) throws ParseException{
     }
     return res;
 }
+public divRClass divR () throws ParseException{
+    TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
+    divRClass res = new divRClass("divR");
+    switch(curTypeToken){
+        case DIVV -> {
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.DIVV) {
+                throw new ParseException(
+                    "Expected token: DIVV, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token DIVV0 = new Token(TypeToken.DIVV, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
+            lexicalAnalyzer.next();
+            fClass f1 = f();
+            res.addChild(f1);
+            divRPrimeClass divRPrime2 = divRPrime();
+            res.addChild(divRPrime2);
+         res.val = f1.val / divRPrime2.val; 
+
+        }
+
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
+    }
+    return res;
+}
+public divRPrimeClass divRPrime () throws ParseException{
+    TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
+    divRPrimeClass res = new divRPrimeClass("divRPrime");
+    switch(curTypeToken){
+        case END, CLOSE, PLUS, MINUS -> {
+            res.addChild(new Tree("EPS"));
+             res.val = 1; 
+        }
+        case DIVV -> {
+            divRClass divR0 = divR();
+            res.addChild(divR0);
+         res.val = divR0.val; 
+
+        }
+
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
+    }
+    return res;
+}
 public mClass m () throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
     mClass res = new mClass("m");
@@ -171,6 +231,50 @@ public mClass m () throws ParseException{
             fClass f0 = f();
             res.addChild(f0);
          res.val = f0.val; 
+
+        }
+        case LOG -> {
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.LOG) {
+                throw new ParseException(
+                    "Expected token: LOG, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token LOG0 = new Token(TypeToken.LOG, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
+            lexicalAnalyzer.next();
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.OPEN) {
+                throw new ParseException(
+                    "Expected token: OPEN, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token OPEN1 = new Token(TypeToken.OPEN, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
+            lexicalAnalyzer.next();
+            fClass f2 = f();
+            res.addChild(f2);
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.ZAP) {
+                throw new ParseException(
+                    "Expected token: ZAP, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token ZAP3 = new Token(TypeToken.ZAP, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
+            lexicalAnalyzer.next();
+            mClass m4 = m();
+            res.addChild(m4);
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.CLOSE) {
+                throw new ParseException(
+                    "Expected token: CLOSE, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token CLOSE5 = new Token(TypeToken.CLOSE, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
+            lexicalAnalyzer.next();
+        res.val = log(f2.val, m4.val);
 
         }
 
@@ -249,6 +353,20 @@ public fClass f () throws ParseException{
     }
     public class tPrimeClass extends Tree {
         public tPrimeClass (String name) {
+            super(name);
+        }
+        public int val;
+	
+    }
+    public class divRClass extends Tree {
+        public divRClass (String name) {
+            super(name);
+        }
+        public int val;
+	
+    }
+    public class divRPrimeClass extends Tree {
+        public divRPrimeClass (String name) {
             super(name);
         }
         public int val;

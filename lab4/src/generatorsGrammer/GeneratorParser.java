@@ -38,6 +38,10 @@ public class GeneratorParser extends AbstractGenerator{
                 public Parser(LexicalAnalyzer lexicalAnalyzer){
                         this.lexicalAnalyzer = lexicalAnalyzer;
                 }
+                
+                private int log (int x, int y) {
+                    return (int) (Math.log(x) / Math.log(y));
+                }
                 """;
         writer.write(constr);
     }

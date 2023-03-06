@@ -15,21 +15,11 @@ t [int val] -> m tPrime<m0.val> { $res.val = $tPrime1.val; } ;
 tPrime <int acc> [int val] ->
       MUL m { $res.val = acc * $m1.val; } tPrime<res.val> { $res.val = $tPrime2.val; }
     | DIV m { $res.val = acc / $m1.val; } tPrime<res.val> { $res.val = $tPrime2.val; }
-    | divR { $res.val = acc / $divR0.val; } tPrime<res.val> { $res.val = $tPrime1.val; }
     | eps { $res.val = acc; }
     ;
 
-divR [int val] -> DIVV f divRPrime { $res.val = $f1.val / $divRPrime2.val; } ;
-
-divRPrime [int val] ->
-      divR { $res.val = $divR0.val; }
-    | eps { $res.val = 1; }
-    ;
-
 m [int val] ->
-
       MINUS m { $res.val = -$m1.val; }
-    | LOG OPEN f ZAP m CLOSE {$res.val = log($f2.val, $m4.val);}
     | f { $res.val = $f0.val; }
     ;
 
@@ -38,11 +28,9 @@ f [int val] ->
     | OPEN e CLOSE { $res.val = $e1.val; }
     ;
 
-LOG : "log" ;
-DIVV : "//" ;
+
 DIV   : "/" ;
 MUL   : "*" ;
-ZAP : "," ;
 PLUS  : "+" ;
 MINUS : "-" ;
 DIGIT : "[0-9]+" ;

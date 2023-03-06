@@ -3,8 +3,11 @@ package generated.Calculator;
 import java.util.regex.Pattern;
 public enum TypeToken {
 
+		LOG("log"),
+		DIVV("//"),
 		DIV("/"),
 		MUL("\\*"),
+		ZAP(","),
 		PLUS("\\+"),
 		MINUS("-"),
 		DIGIT("[0-9]+"),
