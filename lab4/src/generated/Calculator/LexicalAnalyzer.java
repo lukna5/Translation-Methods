@@ -11,7 +11,7 @@ public class LexicalAnalyzer {
 private String input;
 private Token curToken;
 private final Matcher matcher;
-private final static Pattern PATTERN = Pattern.compile("\\*\\*|/|\\*|\\+|-|[0-9]+|\\(|\\)");
+private final static Pattern PATTERN = Pattern.compile("/|\\*|\\+|-|[0-9]+|\\(|\\)");
 public int curPos = 0;
 public LexicalAnalyzer(String input){
         this.input = input;

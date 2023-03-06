@@ -168,57 +168,10 @@ public mClass m () throws ParseException{
 
         }
         case DIGIT, OPEN -> {
-            pClass p0 = p();
-            res.addChild(p0);
-         res.val = p0.val; 
-
-        }
-
-        default -> throw new ParseException("Meet Unexpected token: "
-                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
-    }
-    return res;
-}
-public pClass p () throws ParseException{
-    TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    pClass res = new pClass("p");
-    switch(curTypeToken){
-        case DIGIT, OPEN -> {
             fClass f0 = f();
             res.addChild(f0);
-            pPrimeClass pPrime1 = pPrime(f0.val);
-            res.addChild(pPrime1);
-         res.val = pPrime1.val; 
+         res.val = f0.val; 
 
-        }
-
-        default -> throw new ParseException("Meet Unexpected token: "
-                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
-    }
-    return res;
-}
-public pPrimeClass pPrime (int acc) throws ParseException{
-    TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    pPrimeClass res = new pPrimeClass("pPrime");
-    switch(curTypeToken){
-        case POW -> {
-            if (lexicalAnalyzer.cur().typeToken != TypeToken.POW) {
-                throw new ParseException(
-                    "Expected token: POW, but found: " + lexicalAnalyzer.cur(),
-                     lexicalAnalyzer.curPos
-                );
-            }
-            Token POW0 = new Token(TypeToken.POW, lexicalAnalyzer.cur().text);
-            res.addChild(new Tree(lexicalAnalyzer.cur().text));
-            lexicalAnalyzer.next();
-            pClass p1 = p();
-            res.addChild(p1);
-         res.val = (int) Math.pow(acc, p1.val); 
-
-        }
-        case DIV, MUL, END, CLOSE, PLUS, MINUS -> {
-            res.addChild(new Tree("EPS"));
-             res.val = acc; 
         }
 
         default -> throw new ParseException("Meet Unexpected token: "
@@ -303,20 +256,6 @@ public fClass f () throws ParseException{
     }
     public class mClass extends Tree {
         public mClass (String name) {
-            super(name);
-        }
-        public int val;
-	
-    }
-    public class pClass extends Tree {
-        public pClass (String name) {
-            super(name);
-        }
-        public int val;
-	
-    }
-    public class pPrimeClass extends Tree {
-        public pPrimeClass (String name) {
             super(name);
         }
         public int val;

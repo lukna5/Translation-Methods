@@ -3,7 +3,6 @@ package generated.Calculator;
 import java.util.regex.Pattern;
 public enum TypeToken {
 
-		POW("\\*\\*"),
 		DIV("/"),
 		MUL("\\*"),
 		PLUS("\\+"),

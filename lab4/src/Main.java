@@ -27,10 +27,8 @@ public class Main {
         int type = sc.nextInt();
         if (type == 1) { // TestCalc
             testCalculator();
-            return;
         } else if (type == 5){ // VisualizeCalc
             testGenerated();
-            return;
         } else if (type == 2){ //Test ListInKotlin
             String input = "var newList: Array<Array<Integer>>";
             generated.ListInKotlin.LexicalAnalyzer lexicalAnalyzer = new generated.ListInKotlin.LexicalAnalyzer(input);
@@ -46,16 +44,16 @@ public class Main {
 
             Grammar grammar = parser.metaGrammar().grammar;
             generateFromGrammar(grammar);
-            return;
+        } else if (type == 3) { // generate Calculator
+            String inputGrammar = Files.readString(Path.of("./src/generatorsGrammer/GrammarOfGrammar/Calculator"));
+
+            CharStream charStream = CharStreams.fromString(inputGrammar);
+            MetaGrammarLexer lexer = new MetaGrammarLexer(charStream);
+            MetaGrammarParser parser = new MetaGrammarParser(new CommonTokenStream(lexer));
+
+            Grammar grammar = parser.metaGrammar().grammar;
+            generateFromGrammar(grammar);
         }
-        String inputGrammar = Files.readString(Path.of("./src/generatorsGrammer/GrammarOfGrammar/Calculator"));
-
-        CharStream charStream = CharStreams.fromString(inputGrammar);
-        MetaGrammarLexer lexer = new MetaGrammarLexer(charStream);
-        MetaGrammarParser parser = new MetaGrammarParser(new CommonTokenStream(lexer));
-
-        Grammar grammar = parser.metaGrammar().grammar;
-        generateFromGrammar(grammar);
     }
 
     private static void generateFromGrammar(Grammar grammar) throws ParseException {
