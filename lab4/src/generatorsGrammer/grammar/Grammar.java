@@ -127,7 +127,7 @@ public class Grammar {
         for (NonTerminal nonTerminal: nonTerminals){
             follow.put(nonTerminal.name(), new HashSet<>());
         }
-        follow.get(s).add("$");
+        follow.get(s).add("END");
         boolean changed = true;
         while (changed){
             changed = false;
@@ -140,15 +140,15 @@ public class Grammar {
                             // if nextProduct == 1 for all 2 3 in 123
                             String nonTermName = nonTermProduct.name();
                             int previousSize = follow.get(nonTermName).size();
-                            if (rule.size() >= i + 1){
+                            if (rule.size() <= i + 1){
 
                                 break;
                             }
                             Set<String> firstRight = getFirstFrom(rule, i + 1);
-                            if (firstRight.contains("eps") || firstRight.isEmpty()){
+                            if (firstRight.contains("EPS") || firstRight.isEmpty()){
                                 follow.get(nonTermName).addAll(follow.get(nonTerminalLeft));
                             }
-                            firstRight.remove("eps");
+                            firstRight.remove("EPS");
                             follow.get(nonTermName).addAll(firstRight);
                             if (previousSize != follow.get(nonTermName).size()) {
                                 changed = true;

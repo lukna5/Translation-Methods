@@ -1,0 +1,33 @@
+digraph {
+	0 [label="s"]
+	0 -> 1
+	0 -> 2
+	1 [label="var"]
+	2 [label="naming"]
+	2 -> 3
+	2 -> 4
+	2 -> 5
+	3 [label="newList"]
+	4 [label=":"]
+	5 [label="cont"]
+	5 -> 6
+	5 -> 7
+	6 [label="Array"]
+	7 [label="ar"]
+	7 -> 8
+	7 -> 9
+	7 -> 10
+	8 [label="<"]
+	9 [label="typing"]
+	9 -> 11
+	9 -> 12
+	9 -> 13
+	9 -> 14
+	10 [label=">"]
+	11 [label="Array"]
+	12 [label="<"]
+	13 [label="typing"]
+	13 -> 15
+	14 [label=">"]
+	15 [label="Integer"]
+}

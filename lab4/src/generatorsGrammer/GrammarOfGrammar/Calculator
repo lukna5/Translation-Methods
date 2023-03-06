@@ -5,16 +5,16 @@ grammar Calculator;
 e [int val] -> t ePrime<t0.val> { $res.val = $ePrime1.val; } ;
 
 ePrime <int acc> [int val] ->
-      PLUS t MINUS { $res.val = acc + $t1.val; } ePrime<res.val> { $res.val = $ePrime3.val; }
-    | MINUS t { $res.val = acc - $t1.val; } ePrime<res.val> { $res.val = $ePrime3.val; }
+      PLUS t { $res.val = acc + $t1.val; } ePrime<res.val> { $res.val = $ePrime2.val; }
+    | MINUS t { $res.val = acc - $t1.val; } ePrime<res.val> { $res.val = $ePrime2.val; }
     | eps { $res.val = acc; }
     ;
 
 t [int val] -> m tPrime<m0.val> { $res.val = $tPrime1.val; } ;
 
 tPrime <int acc> [int val] ->
-      MUL m { $res.val = acc * $m1.val; } tPrime<res.val> { $res.val = $tPrime3.val; }
-    | DIV m { $res.val = acc / $m1.val; } tPrime<res.val> { $res.val = $tPrime3.val; }
+      MUL m { $res.val = acc * $m1.val; } tPrime<res.val> { $res.val = $tPrime2.val; }
+    | DIV m { $res.val = acc / $m1.val; } tPrime<res.val> { $res.val = $tPrime2.val; }
     | eps { $res.val = acc; }
     ;
 

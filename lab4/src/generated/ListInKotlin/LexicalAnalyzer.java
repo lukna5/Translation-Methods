@@ -1,4 +1,4 @@
-package generated.Calculator;
+package generated.ListInKotlin;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,7 +11,7 @@ public class LexicalAnalyzer {
 private String input;
 private Token curToken;
 private final Matcher matcher;
-private final static Pattern PATTERN = Pattern.compile("\\*\\*|/|\\*|\\+|-|[0-9]+|\\(|\\)");
+private final static Pattern PATTERN = Pattern.compile("var|:|Array|<|>|[a-z][a-zA-Z]*|[A-Z][a-zA-Z]*");
 public int curPos = 0;
 public LexicalAnalyzer(String input){
         this.input = input;

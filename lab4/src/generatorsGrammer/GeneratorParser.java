@@ -1,9 +1,6 @@
 package generatorsGrammer;
 
-import generatorsGrammer.grammar.Grammar;
-import generatorsGrammer.grammar.NonTerminal;
-import generatorsGrammer.grammar.Product;
-import generatorsGrammer.grammar.Terminal;
+import generatorsGrammer.grammar.*;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,33 +13,32 @@ public class GeneratorParser extends AbstractGenerator{
 
     @Override
     protected void genImports(BufferedWriter writer) throws IOException {
-        String imports = String.format("""
+        String imports = """
                 import java.io.BufferedWriter;
                 import java.io.IOException;
                 import java.nio.file.Files;
                 import java.nio.file.Path;
-                import java.util.ArrayList;
-                import java.util.Collections;
-                import java.util.List;
-                """);
+                import java.util.*;
+                import java.text.ParseException;
+                """;
         writer.write(imports);
     }
 
     @Override
     protected void generateFields(BufferedWriter writer) throws IOException {
-        String fields = String.format("""
+        String fields = """
                 LexicalAnalyzer lexicalAnalyzer;
-                """);
+                """;
         writer.write(fields);
     }
 
     @Override
     protected void generateConstructor(BufferedWriter writer) throws IOException {
-        String constr = String.format("""
+        String constr = """
                 public Parser(LexicalAnalyzer lexicalAnalyzer){
                         this.lexicalAnalyzer = lexicalAnalyzer;
                 }
-                """);
+                """;
         writer.write(constr);
     }
 
@@ -54,45 +50,88 @@ public class GeneratorParser extends AbstractGenerator{
             Set<String> cases = new HashSet<>();
             for (ArrayList<Product> rule : grammar.getRules().get(nonTerminalLeft.name())) {
                 Set<String> first = grammar.getFirstFromRule(rule);
-                cases.add(generateCase(first, rule));
+                cases.add(generateCase(first, rule, nonTerminalLeft.name()));
             }
             String header = String.format("""
-                        public %sClass %s (){
+                        public %sClass %s (%s) throws ParseException{
                             TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-                            Tree res = new Tree("%s");
+                            %sClass res = new %sClass("%s");
                             switch(curTypeToken){
                         %s
+                                default -> throw new ParseException("Meet Unexpected token: "
+                                        + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
                             }
+                            return res;
                         }
-                        """, nonTerminalLeft.name(), nonTerminalLeft.name(),
+                        """, nonTerminalLeft.name(), nonTerminalLeft.name(), nonTerminalLeft.inherited(),
+                            nonTerminalLeft.name(), nonTerminalLeft.name(),
                             nonTerminalLeft.name(), String.join("", cases));
             writer.write(header);
         }
 
     }
 
-    private String generateCase(Set<String> first, List<Product> rule){
+    private String generateCase(Set<String> first, List<Product> rule, String leftN){
+        String followCase = "";
+        if (first.contains("EPS")){
+            first.remove("EPS");
+            String code = "";
+            if (rule.size() >= 2
+                    && (rule.get(0).getType() == Product.TypeProduct.TERMINAL
+                    || rule.get(0).getType() == Product.TypeProduct.NONTERMINAL)
+                    && rule.get(1).getType() == Product.TypeProduct.CODE){
+                code = ((Code) rule.get(1)).code().substring(1, ((Code) rule.get(1)).code().length() - 1)
+                        .replaceAll("\\$", "");
+            }
+            followCase = String.format("""
+                            case %s -> {
+                                res.addChild(new Tree("EPS"));
+                                %s
+                            }
+                    """, String.join(", ", grammar.getFollow().get(leftN)), code);
+            if (first.isEmpty()) return followCase;
+        }
         List<String> strokes = new ArrayList<>();
         int count = 0;
         for (Product product: rule){
             if (product.getType() == Product.TypeProduct.NONTERMINAL){
                 NonTerminal nonTerminal = (NonTerminal) product;
                 strokes.add(String.format("""
-                                    %sClass %s%s = %s();
+                                    %sClass %s%s = %s(%s);
                                     res.addChild(%s%s);
                         """,
                         nonTerminal.name(),
                         nonTerminal.name(),
                         count,
                         nonTerminal.name(),
+                        nonTerminal.inherited(),
                         nonTerminal.name(),
-                        count++)); // добавить аргументы
+                        count)); // добавить аргумент
+                count++;
             } else if (product.getType() == Product.TypeProduct.TERMINAL){
                 Terminal terminal = (Terminal) product;
                 strokes.add(String.format("""
-                                    res.addChild(new Tree("%s"));
-                                    lexicalAnalyzer.next();
-                        """, terminal.name()));
+                                            if (lexicalAnalyzer.cur().typeToken != TypeToken.%s) {
+                                                throw new ParseException(
+                                                    "Expected token: %s, but found: " + lexicalAnalyzer.cur(),
+                                                     lexicalAnalyzer.curPos
+                                                );
+                                            }
+                                            Token %s%s = new Token(TypeToken.%s, lexicalAnalyzer.cur().text);
+                                            res.addChild(new Tree(lexicalAnalyzer.cur().text));
+                                            lexicalAnalyzer.next();
+                                """,
+                        terminal.name(), terminal.name(),
+                        terminal.name(), count,
+                        terminal.name(),
+                        terminal.name()));
+                count++;
+            } else if (product.getType() == Product.TypeProduct.CODE) {
+                Code code = (Code) product;
+                String text = code.code().substring(1, code.code().length() - 1).replaceAll("\\$", "");
+                strokes.add(String.format("""
+                                %s
+                        """, text));
             }
         }
         String inCase = String.join("", strokes);
@@ -102,7 +141,7 @@ public class GeneratorParser extends AbstractGenerator{
                         }
                         """,
                 String.join(", ", first), inCase); //follow
-        return allCase;
+        return followCase + allCase;
     }
 
     @Override
@@ -111,7 +150,10 @@ public class GeneratorParser extends AbstractGenerator{
         for (NonTerminal nonTerminal: grammar.getNonTerminals()){
             String fields = String.join("",
                     Arrays.stream(nonTerminal.synthesised().split(","))
-                            .map(field -> field + ";\n\t").toList());
+                            .map(field -> {
+                                if (field.equals("")) return "";
+                                return "public " + field + ";\n\t";
+                            }).toList());
             String declare = String.format("""
                         public class %sClass extends Tree {
                             public %sClass (String name) {
@@ -141,9 +183,10 @@ public class GeneratorParser extends AbstractGenerator{
                         }
                                     
                         public void visualize(String graphName) {
-                            try (BufferedWriter bufferedWriter = Files.newBufferedWriter(Path.of(graphName + ".dot"))) {
-                                bufferedWriter.write(treeToDotRepresentation(this));
-                                Runtime.getRuntime().exec("dot " + graphName + ".dot -Tpng -o " + graphName + ".png");
+                             graphName = "C:\\\\Users\\\\vovak\\\\myGit\\\\Translation-Methods\\\\lab4\\\\graph";
+                            try (BufferedWriter writer = Files.newBufferedWriter(Path.of(graphName + ".dot"))) {
+                                writer.write(treeToDotRepresentation(this));
+                                writer.close();
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }

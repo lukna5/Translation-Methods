@@ -35,6 +35,7 @@ public class GeneratorLexemeAnalyze extends AbstractGenerator{
                 private Token curToken;
                 private final Matcher matcher;
                 private final static Pattern PATTERN = Pattern.compile(%s);
+                public int curPos = 0;             
                 """, grammarTokens);
         writer.write(fields);
     }
@@ -50,6 +51,7 @@ public class GeneratorLexemeAnalyze extends AbstractGenerator{
                 public LexicalAnalyzer(String input){
                         this.input = input;
                         matcher = PATTERN.matcher(input);
+                        next();
                 }
                 """);
         writer.write(constr);
@@ -62,6 +64,7 @@ public class GeneratorLexemeAnalyze extends AbstractGenerator{
                     return curToken;
                 }
                 public Token next(){
+                    curPos++;
                     if (curToken != null && curToken.typeToken == TypeToken.END){
                         return null;
                     }

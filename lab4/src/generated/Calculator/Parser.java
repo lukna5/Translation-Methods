@@ -4,232 +4,329 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.text.ParseException;
 public class Parser {
 
 LexicalAnalyzer lexicalAnalyzer;
 public Parser(LexicalAnalyzer lexicalAnalyzer){
         this.lexicalAnalyzer = lexicalAnalyzer;
 }
-public eClass e (){
+public eClass e () throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    Tree res = new Tree("e");
+    eClass res = new eClass("e");
     switch(curTypeToken){
         case DIGIT, MINUS, OPEN -> {
             tClass t0 = t();
             res.addChild(t0);
-            ePrimeClass ePrime1 = ePrime();
+            ePrimeClass ePrime1 = ePrime(t0.val);
             res.addChild(ePrime1);
+         res.val = ePrime1.val; 
 
         }
 
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
     }
+    return res;
 }
-public ePrimeClass ePrime (){
+public ePrimeClass ePrime (int acc) throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    Tree res = new Tree("ePrime");
+    ePrimeClass res = new ePrimeClass("ePrime");
     switch(curTypeToken){
+        case END, CLOSE -> {
+            res.addChild(new Tree("EPS"));
+             res.val = acc; 
+        }
         case MINUS -> {
-            res.addChild(new Tree("MINUS"));
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.MINUS) {
+                throw new ParseException(
+                    "Expected token: MINUS, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token MINUS0 = new Token(TypeToken.MINUS, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
             lexicalAnalyzer.next();
-            tClass t0 = t();
-            res.addChild(t0);
-            ePrimeClass ePrime1 = ePrime();
-            res.addChild(ePrime1);
+            tClass t1 = t();
+            res.addChild(t1);
+         res.val = acc - t1.val; 
+            ePrimeClass ePrime2 = ePrime(res.val);
+            res.addChild(ePrime2);
+         res.val = ePrime2.val; 
 
         }
         case PLUS -> {
-            res.addChild(new Tree("PLUS"));
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.PLUS) {
+                throw new ParseException(
+                    "Expected token: PLUS, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token PLUS0 = new Token(TypeToken.PLUS, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
             lexicalAnalyzer.next();
-            tClass t0 = t();
-            res.addChild(t0);
-            res.addChild(new Tree("MINUS"));
-            lexicalAnalyzer.next();
-            ePrimeClass ePrime1 = ePrime();
-            res.addChild(ePrime1);
+            tClass t1 = t();
+            res.addChild(t1);
+         res.val = acc + t1.val; 
+            ePrimeClass ePrime2 = ePrime(res.val);
+            res.addChild(ePrime2);
+         res.val = ePrime2.val; 
 
         }
-        case EPS -> {
-            res.addChild(new Tree("EPS"));
-            lexicalAnalyzer.next();
 
-        }
-
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
     }
+    return res;
 }
-public tClass t (){
+public tClass t () throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    Tree res = new Tree("t");
+    tClass res = new tClass("t");
     switch(curTypeToken){
         case DIGIT, MINUS, OPEN -> {
             mClass m0 = m();
             res.addChild(m0);
-            tPrimeClass tPrime1 = tPrime();
+            tPrimeClass tPrime1 = tPrime(m0.val);
             res.addChild(tPrime1);
+         res.val = tPrime1.val; 
 
         }
 
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
     }
+    return res;
 }
-public tPrimeClass tPrime (){
+public tPrimeClass tPrime (int acc) throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    Tree res = new Tree("tPrime");
+    tPrimeClass res = new tPrimeClass("tPrime");
     switch(curTypeToken){
-        case EPS -> {
+        case END, CLOSE, PLUS, MINUS -> {
             res.addChild(new Tree("EPS"));
+             res.val = acc; 
+        }
+        case MUL -> {
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.MUL) {
+                throw new ParseException(
+                    "Expected token: MUL, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token MUL0 = new Token(TypeToken.MUL, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
             lexicalAnalyzer.next();
+            mClass m1 = m();
+            res.addChild(m1);
+         res.val = acc * m1.val; 
+            tPrimeClass tPrime2 = tPrime(res.val);
+            res.addChild(tPrime2);
+         res.val = tPrime2.val; 
 
         }
         case DIV -> {
-            res.addChild(new Tree("DIV"));
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.DIV) {
+                throw new ParseException(
+                    "Expected token: DIV, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token DIV0 = new Token(TypeToken.DIV, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
             lexicalAnalyzer.next();
-            mClass m0 = m();
-            res.addChild(m0);
-            tPrimeClass tPrime1 = tPrime();
-            res.addChild(tPrime1);
+            mClass m1 = m();
+            res.addChild(m1);
+         res.val = acc / m1.val; 
+            tPrimeClass tPrime2 = tPrime(res.val);
+            res.addChild(tPrime2);
+         res.val = tPrime2.val; 
 
         }
-        case MUL -> {
-            res.addChild(new Tree("MUL"));
-            lexicalAnalyzer.next();
-            mClass m0 = m();
-            res.addChild(m0);
-            tPrimeClass tPrime1 = tPrime();
-            res.addChild(tPrime1);
 
-        }
-
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
     }
+    return res;
 }
-public mClass m (){
+public mClass m () throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    Tree res = new Tree("m");
+    mClass res = new mClass("m");
     switch(curTypeToken){
+        case MINUS -> {
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.MINUS) {
+                throw new ParseException(
+                    "Expected token: MINUS, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token MINUS0 = new Token(TypeToken.MINUS, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
+            lexicalAnalyzer.next();
+            mClass m1 = m();
+            res.addChild(m1);
+         res.val = -m1.val; 
+
+        }
         case DIGIT, OPEN -> {
             pClass p0 = p();
             res.addChild(p0);
-
-        }
-        case MINUS -> {
-            res.addChild(new Tree("MINUS"));
-            lexicalAnalyzer.next();
-            mClass m0 = m();
-            res.addChild(m0);
+         res.val = p0.val; 
 
         }
 
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
     }
+    return res;
 }
-public pClass p (){
+public pClass p () throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    Tree res = new Tree("p");
+    pClass res = new pClass("p");
     switch(curTypeToken){
         case DIGIT, OPEN -> {
             fClass f0 = f();
             res.addChild(f0);
-            pPrimeClass pPrime1 = pPrime();
+            pPrimeClass pPrime1 = pPrime(f0.val);
             res.addChild(pPrime1);
+         res.val = pPrime1.val; 
 
         }
 
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
     }
+    return res;
 }
-public pPrimeClass pPrime (){
+public pPrimeClass pPrime (int acc) throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    Tree res = new Tree("pPrime");
+    pPrimeClass res = new pPrimeClass("pPrime");
     switch(curTypeToken){
-        case EPS -> {
-            res.addChild(new Tree("EPS"));
-            lexicalAnalyzer.next();
-
-        }
         case POW -> {
-            res.addChild(new Tree("POW"));
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.POW) {
+                throw new ParseException(
+                    "Expected token: POW, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token POW0 = new Token(TypeToken.POW, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
             lexicalAnalyzer.next();
-            pClass p0 = p();
-            res.addChild(p0);
+            pClass p1 = p();
+            res.addChild(p1);
+         res.val = (int) Math.pow(acc, p1.val); 
 
         }
+        case DIV, MUL, END, CLOSE, PLUS, MINUS -> {
+            res.addChild(new Tree("EPS"));
+             res.val = acc; 
+        }
 
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
     }
+    return res;
 }
-public fClass f (){
+public fClass f () throws ParseException{
     TypeToken curTypeToken = lexicalAnalyzer.cur().typeToken;
-    Tree res = new Tree("f");
+    fClass res = new fClass("f");
     switch(curTypeToken){
-        case DIGIT -> {
-            res.addChild(new Tree("DIGIT"));
-            lexicalAnalyzer.next();
-
-        }
         case OPEN -> {
-            res.addChild(new Tree("OPEN"));
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.OPEN) {
+                throw new ParseException(
+                    "Expected token: OPEN, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token OPEN0 = new Token(TypeToken.OPEN, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
             lexicalAnalyzer.next();
-            eClass e0 = e();
-            res.addChild(e0);
-            res.addChild(new Tree("CLOSE"));
+            eClass e1 = e();
+            res.addChild(e1);
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.CLOSE) {
+                throw new ParseException(
+                    "Expected token: CLOSE, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token CLOSE2 = new Token(TypeToken.CLOSE, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
             lexicalAnalyzer.next();
+         res.val = e1.val; 
+
+        }
+        case DIGIT -> {
+            if (lexicalAnalyzer.cur().typeToken != TypeToken.DIGIT) {
+                throw new ParseException(
+                    "Expected token: DIGIT, but found: " + lexicalAnalyzer.cur(),
+                     lexicalAnalyzer.curPos
+                );
+            }
+            Token DIGIT0 = new Token(TypeToken.DIGIT, lexicalAnalyzer.cur().text);
+            res.addChild(new Tree(lexicalAnalyzer.cur().text));
+            lexicalAnalyzer.next();
+         res.val = Integer.parseInt(DIGIT0.text); 
 
         }
 
+        default -> throw new ParseException("Meet Unexpected token: "
+                + lexicalAnalyzer.cur(), lexicalAnalyzer.curPos);
     }
+    return res;
 }
     public class eClass extends Tree {
         public eClass (String name) {
             super(name);
         }
-        int val;
+        public int val;
 	
     }
     public class ePrimeClass extends Tree {
         public ePrimeClass (String name) {
             super(name);
         }
-        int val;
+        public int val;
 	
     }
     public class tClass extends Tree {
         public tClass (String name) {
             super(name);
         }
-        int val;
+        public int val;
 	
     }
     public class tPrimeClass extends Tree {
         public tPrimeClass (String name) {
             super(name);
         }
-        int val;
+        public int val;
 	
     }
     public class mClass extends Tree {
         public mClass (String name) {
             super(name);
         }
-        int val;
+        public int val;
 	
     }
     public class pClass extends Tree {
         public pClass (String name) {
             super(name);
         }
-        int val;
+        public int val;
 	
     }
     public class pPrimeClass extends Tree {
         public pPrimeClass (String name) {
             super(name);
         }
-        int val;
+        public int val;
 	
     }
     public class fClass extends Tree {
         public fClass (String name) {
             super(name);
         }
-        int val;
+        public int val;
 	
     }
     public class Tree {
@@ -249,9 +346,10 @@ public fClass f (){
         }
 
         public void visualize(String graphName) {
-            try (BufferedWriter bufferedWriter = Files.newBufferedWriter(Path.of(graphName + ".dot"))) {
-                bufferedWriter.write(treeToDotRepresentation(this));
-                Runtime.getRuntime().exec("dot " + graphName + ".dot -Tpng -o " + graphName + ".png");
+             graphName = "C:\\Users\\vovak\\myGit\\Translation-Methods\\lab4\\graph";
+            try (BufferedWriter writer = Files.newBufferedWriter(Path.of(graphName + ".dot"))) {
+                writer.write(treeToDotRepresentation(this));
+                writer.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

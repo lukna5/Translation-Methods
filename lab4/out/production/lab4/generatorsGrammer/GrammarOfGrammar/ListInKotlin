@@ -1,0 +1,30 @@
+grammar ListInKotlin;
+
+: s ;
+
+s -> VAR naming
+    ;
+
+naming -> NAME COLON cont
+    ;
+
+cont -> ARRAY ar
+    ;
+
+ar -> LEFT typing RIGHT
+    ;
+
+typing ->
+    TYPE
+    | ARRAY LEFT typing RIGHT
+    ;
+
+
+
+VAR : "var" ;
+COLON : ":" ;
+ARRAY : "Array" ;
+LEFT : "<" ;
+RIGHT : ">" ;
+NAME : "[a-z][a-zA-Z]*" ;
+TYPE : "[A-Z][a-zA-Z]*" ;
